@@ -12,7 +12,7 @@ import com.sun.jna.Pointer
 import java.nio.{ByteBuffer, FloatBuffer}
 
 trait HmdType extends ovrHmdType
-trait HmdCapBits extends ovrHmdCapBits
+
 trait DistortionCaps extends ovrDistortionCaps
 trait EyeType extends ovrEyeType
 trait StatusBits extends ovrStatusBits
@@ -70,6 +70,7 @@ object Oculus extends OvrLibrary {
 
   def getDesc(hmd: Hmd, desc: HmdDesc) = ovrHmd_GetDesc(hmd, desc)
 
+  /*
   def getFovTextureSize(
                          hmd: Hmd,
                          eye: Int,
@@ -77,13 +78,14 @@ object Oculus extends OvrLibrary {
                          pixelsPerDisplayPixel: Float): Sizei.ByValue = {
     ovrHmd_GetFovTextureSize(hmd, eye, fov, pixelsPerDisplayPixel)
   }
+  */
 
   def configureRendering(
                           hmd: Hmd,
                           apiConfig: RenderAPIConfig,
                           hmdCaps: Int,
                           distortionCaps: Int,
-                          eyeDescIn: EyeDesc,
+                          eyeDescIn: EyeRenderDesc,
                           eyeRenderDescOut: EyeRenderDesc): Byte = {
     ovrHmd_ConfigureRendering(hmd, apiConfig, hmdCaps, distortionCaps, eyeDescIn, eyeRenderDescOut )
   }
@@ -92,7 +94,7 @@ object Oculus extends OvrLibrary {
                          apiConfig: RenderAPIConfig,
                          hmdCaps: Int,
                          distortionCaps: Int,
-                         eyeDescIn: EyeDesc,
+                         eyeDescIn: EyeRenderDesc,
                          eyeRenderDescOut: EyeRenderDesc): Byte = {
     ovrHmd_ConfigureRendering(hmd, apiConfig,hmdCaps, distortionCaps, eyeDescIn, eyesRenderDescout)
   }
@@ -105,32 +107,31 @@ object Oculus extends OvrLibrary {
 
   def endEyeRender(hmd: Hmd, eye: Int, renderPose: Posef.ByValue, eyeTexture: Texture) = ovrHmd_EndEyeRender(hmd, eye)
 
-  def getRenderDesc(hmd: Hmd, eyeDesc: EyeDesc.ByValue): EyeRenderDesc.ByValue = ovrHmd_GetRenderDesc( md, eyeDesc)
+  def getRenderDesc(hmd: Hmd, eyeDesc: EyeRenderDesc.ByValue): EyeRenderDesc.ByValue = ovrHmd_GetRenderDesc( md, eyeDesc)
 
   def createDistortionMesh(
                             hmd: Hmd,
-                            eyeDesc: EyeDesc.ByValue,
+                            eyeDesc: EyeRenderDesc.ByValue,
                             distortionCaps: Int,
-                            uvScaleOffsetOut: Vector2f,
                             meshData: DistortionMesh): Byte = {
-    ovrHmd_CreateDistortionMesh( hmd, eyeDesc, distortionCaps, uvScaleOffsetOut, meshData )
+    ovrHmd_CreateDistortionMesh( hmd, eyeDesc, distortionCaps, meshData )
   }
 
 
-  def createDistortionMesh(hmd: Pointer, eyeDesc: EyeDesc.ByValue, distortionCaps: Int, uvScaleOffsetOut: Vector2f, meshData: DistortionMesh): Byte = {
-    ovrHmd_CreateDistortionMesh(hmd, eyeDesc, distortionCaps, uvScaleOffsetOut, meshData)
+  def createDistortionMesh(hmd: Pointer, eyeDesc: EyeRenderDesc.ByValue, distortionCaps: Int, meshData: DistortionMesh): Byte = {
+    ovrHmd_CreateDistortionMesh(hmd, eyeDesc, distortionCaps, meshData)
   }
 
   def destroyDistortionMesh(meshData: DistortionMesh) = {
     ovrHmd_DestroyDistortionMesh(meshData)
   }
 
-  def getRenderScaleAndOffset(hmd: Hmd, eyeDesc: EyeDesc.ByValue, distortionCaps: Int, uvScaleOffsetOut: Vector2f) = {
+  def getRenderScaleAndOffset(hmd: Hmd, eyeDesc: EyeRenderDesc.ByValue, distortionCaps: Int) = {
     ovrHmd_GetRenderScaleAndOffset(hmd, eyeDesc,distortionCaps,uvScaleOffsetOut)
   }
 
-  def getRenderScaleAndOffset(hmd: Pointer, eyeDesc: EyeDesc.ByValue, distortionCaps: Int, uvScaleOffsetOut: Vector2f) = {
-    ovrHmd_GetRenderScaleAndOffset(hmd, eyeDesc,distortionCaps,uvScaleOffsetOut)
+  def getRenderScaleAndOffset(hmd: Pointer, eyeDesc: EyeRenderDesc.ByValue, distortionCaps: Int) = {
+    ovrHmd_GetRenderScaleAndOffset(hmd, eyeDesc,distortionCaps)
   }
 
   def getFrameTiming(hmd: Hmd, frameIndex: Int): FrameTiming.ByValue = ovrHmd_GetFrameTiming(hmd, frameIndex)
@@ -143,23 +144,23 @@ object Oculus extends OvrLibrary {
 
   def getEyePose(hmd: Hmd, eye: Int): Posef.ByValue = ovrHmd_GetEyePose(hmd , eye )
 
-  def getEyeTimewarpMatrices(hmd: Hmd, eye: Int, renderPose: Posef.ByValue, twmOut: Matrix4f) = {
-    ovrHmd_GetEyeTimewarpMatrices(hmd , eye , renderPose, twmOut )
+  def getEyeTimewarpMatrices(hmd: Hmd, eye: Int, renderPose: Posef.ByValue) = {
+    ovrHmd_GetEyeTimewarpMatrices(hmd , eye , renderPose )
   }
 
-  def getEyeTimewarpMatrices(hmd: Pointer, eye: Int, renderPose: Posef.ByValue, twmOut: Matrix4f) = {
-    ovrHmd_GetEyeTimewarpMatrices(hmd, eye, renderPose, twmOut)
+  def getEyeTimewarpMatrices(hmd: Pointer, eye: Int, renderPose: Posef.ByValue) = {
+    ovrHmd_GetEyeTimewarpMatrices(hmd, eye, renderPose)
   }
-  def projection(fov: FovPort.ByValue, znear: Float, zfar: Float, rightHanded: Byte): Matrix4f.ByValue = {
+  def projection(fov: FovPort.ByValue, znear: Float, zfar: Float, rightHanded: Byte): OvrMatrix4f.ByValue = {
     ovrMatrix4f_Projection(fov, znear, zfar, rightHanded)
   }
 
   def orthoSubProjection(
-                          projection: Matrix4f.ByValue,
-                          orthoScale: Vector2f.ByValue,
+                          projection: OvrMatrix4f.ByValue,
+
                           orthoDistance: Float,
                           eyeViewAdjustX: Float): Matrix4f.ByValue  = {
-    ovrMatrix4f_OrthoSubProjection(projection, orthoScale, orthoDistance, eyeViewAdjustX)
+    ovrMatrix4f_OrthoSubProjection(projection, orthoDistance, eyeViewAdjustX)
   }
 
   def getTimeInSeconds: Double = ovr_GetTimeInSeconds
